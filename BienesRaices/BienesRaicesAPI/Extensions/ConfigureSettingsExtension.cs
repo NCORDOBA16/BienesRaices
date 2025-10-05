@@ -11,7 +11,6 @@ namespace BienesRaicesAPI.Extensions
         {
             AddApiAuthSettings();
             AddDbSettings();
-            AddExternalApiSettings();
             AddCloudinaryCredentials();
         }
 
@@ -29,11 +28,6 @@ namespace BienesRaicesAPI.Extensions
             DbSettings.TimeoutInMinutes = EnvirontmentHelper.GetIntValueFromEnvVariable("DB_TIMEOUT_IN_MINUTES");
         }
 
-
-        private static void AddExternalApiSettings()
-        {
-            ExternalApiUrl.PokemonApiUrl = EnvirontmentHelper.GetEnvironmentValue("POKEMON_API_URL");
-        }
         private static void AddCloudinaryCredentials()
         {
             CloudinaryCredentials.CloudName = EnvirontmentHelper.GetEnvironmentValue("CLOUDINARY_CLOUD_NAME");
