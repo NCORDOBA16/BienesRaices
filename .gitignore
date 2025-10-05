@@ -41,6 +41,9 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 
+# Ignore GitHub folder and its contents
+.github/
+
 # MSBuild Binary and Structured Log
 *.binlog
 
