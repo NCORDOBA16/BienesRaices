@@ -8,16 +8,10 @@ using Application.Exceptions;
 
 namespace Application.Features.Properties.Commands.UpdateProperty
 {
-    public class UpdatePropertyCommandHandler : IRequestHandler<UpdatePropertyCommand, BaseWrapperResponse<PropertyDto>>
+    public class UpdatePropertyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<UpdatePropertyCommand, BaseWrapperResponse<PropertyDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        public UpdatePropertyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<BaseWrapperResponse<PropertyDto>> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)
         {

@@ -1,63 +1,61 @@
-# BienesRaices — Documentación de la solución
+# BienesRaices — Documentación del Proyecto
 
-Este repositorio es una solución ASP.NET Core Web API en capas para gestión de bienes raíces. El README resume la arquitectura, cómo ejecutar el proyecto, las variables de entorno necesarias y provee los diagramas C4 (4 niveles) y el modelo entidad-relación (MER) en notación Mermaid.
+## Resumen del Proyecto
+BienesRaices es una solución ASP.NET Core Web API diseñada para la gestión de bienes raíces. La arquitectura sigue un enfoque en capas, separando responsabilidades en los siguientes proyectos:
 
-## Resumen y arquitectura (alto nivel)
+- **BienesRaicesAPI/**: Capa HTTP que incluye controladores, middlewares, filtros y configuración de Swagger.
+- **Application/**: Contiene la lógica de negocio, incluyendo MediatR (handlers), DTOs, validaciones (FluentValidation) y perfiles de AutoMapper.
+- **Infrastructure/**: Maneja la persistencia con EF Core, repositorios genéricos y servicios externos.
+- **Domain/**: Define las entidades y modelos del dominio.
 
-La solución sigue una separación en proyectos por responsabilidad:
+El proyecto utiliza patrones como inyección de dependencias, registro automático de servicios mediante atributos y un enfoque modular para facilitar la escalabilidad.
 
-- BienesRaicesAPI/ — Capa HTTP (Controllers, Filters, Middlewares, Swagger).
-- Application/ — Lógica de aplicación: MediatR (Requests/Handlers), FluentValidation (Validators), AutoMapper (Profiles), Behaviours (pipeline).
-- Infrastructure/ — Persistencia (EF Core DbContext), repositorios, servicios de plataforma, clientes HTTP externos.
-- Domain/ — Entidades de dominio y modelos.
+---
 
-El registro de servicios y wiring se realiza principalmente por escaneo de ensamblados y atributos personalizados (ver sección "Convenciones" más abajo).
+## Instrucciones para Ejecutar la Aplicación
 
-## Convenciones clave para desarrolladores y agentes
+### Requisitos Previos
+- .NET SDK 9.0 o superior.
+- SQL Server para la base de datos.
+- Configurar las siguientes variables de entorno:
 
-- Registro de servicios: Se usa atributos personalizados (`[RegisterService]`, `[RegisterExternalService]`) localizados en `Application/Attributes/Services/`. Evita añadir wiring manual cuando exista el patrón por atributos.
-- MediatR: Coloca Requests/Handlers en `Application/Features/*`. `Application/ServiceExtension.cs` descubre handlers, validators y perfiles.
-- Responses: La API usa `WrapperResponse<T>` para respuestas uniformes. El filtro `ValidateModelAttribute` normaliza los errores de validación.
-- Middleware: La composición se encuentra en `Program.cs` y `BienesRaicesAPI/Extensions/AppExtension.cs`. Los middlewares de errores incluyen `ErrorHandlerMiddleware` y `NotFoundMiddleware`.
+| Variable              | Descripción                                      | Ejemplo                                   |
+|-----------------------|--------------------------------------------------|-------------------------------------------|
+| `API_KEY`             | Clave de la API para autenticación.             | `MySuperSecretApiKey`                     |
+| `CORS_POLICY_NAME`    | Nombre de la política CORS.                     | `AllowLocalhost`                          |
+| `CORS_ORIGIN`         | Origen permitido para CORS.                     | `*`                   |
+| `DEFAULT_CONNECTION`  | Cadena de conexión a la base de datos.          | `Server=.;Database=BienesRaicesDb;...`    |
+| `DB_TIMEOUT_IN_MINUTES` | Timeout para comandos de EF Core.             | `5`                                       |
+| `CLOUDINARY_CLOUD_NAME` | Nombre del servicio Cloudinary.               |                                           |
+| `CLOUDINARY_API_KEY`  | API key de Cloudinary.                          |                                           |
+| `CLOUDINARY_API_SECRET` | API secret de Cloudinary.                     |                                           |
 
-## Variables de entorno (obligatorias para ejecución)
+### Pasos para Ejecutar
 
-Las variables se extraen desde `BienesRaicesAPI/Extensions/ConfigureSettingsExtension.cs`. A continuación la lista y descripción (nombre, propósito y ejemplo):
+1. Configurar las variables de entorno.
 
-- `API_KEY` — Clave de la API (usada para autenticación/firmas internas). Ej: `MySuperSecretApiKey`.
-- `CORS_POLICY_NAME` — Nombre de la política CORS registrada. Ej: `AllowLocalhost`.
-- `CORS_ORIGIN` — Origen permitido para CORS. Ej: `http://localhost:3000`.
-- `DEFAULT_CONNECTION` — Connection string a la base de datos SQL Server. Ej: `Server=.;Database=BienesRaicesDb;Trusted_Connection=True;`.
-- `DB_TIMEOUT_IN_MINUTES` — Timeout de comandos para EF Core (número entero). Ej: `2`.
-- `CLOUDINARY_CLOUD_NAME` — Cloud name para Cloudinary (almacenamiento de imágenes).
-- `CLOUDINARY_API_KEY` — API key de Cloudinary.
-- `CLOUDINARY_API_SECRET` — API secret de Cloudinary.
+2. Compilar la solución:
+   ```powershell
+   dotnet build BienesRaices.sln
+   ```
 
-Recomendación: durante desarrollo local, crea un archivo `.env` o config local (no lo subas al repo) y usa herramientas como `direnv`/variables de entorno en tu IDE o launchSettings.json para inyectarlas.
+3. Ejecutar la API localmente:
+   ```powershell
+   dotnet run --project BienesRaicesAPI/ --urls "http://localhost:5000"
+   ```
 
-## Cómo ejecutar (desarrollo, desde la raíz del repo)
+4. Ejecutar los tests:
+   ```powershell
+   dotnet test BienesRaices.sln
+   ```
 
-PowerShell (Windows):
+---
 
-```powershell
-# Compilar la solución
-dotnet build BienesRaices.sln
+## Documentación Técnica
 
-# Ejecutar API localmente (usa launchSettings si existe)
-dotnet run --project BienesRaicesAPI/ --urls "http://localhost:5000"
+### Diagramas C4
 
-# Ejecutar tests
-dotnet test BienesRaices.sln
-```
-
-Asegúrate de haber configurado las variables de entorno listadas anteriormente.
-
-## Diagramas en Mermaid
-
-A continuación están incluidos los diagramas en notación Mermaid. Puedes visualizar estos bloques en visores que soporten Mermaid o en GitHub si activas la preview.
-
-### Diagrama C4 - Nivel 1 (System Context)
-
+#### Nivel 1: Contexto del Sistema
 ```mermaid
 C4Context
 title Sistema BienesRaices - Contexto
@@ -72,8 +70,7 @@ Rel(BienesRaicesAPI, Cloudinary, "Almacena/recupera imágenes (SDK/HTTP)")
 Rel(BienesRaicesAPI, SqlServer, "Lee/Escribe datos (EF Core)")
 ```
 
-### Diagrama C4 - Nivel 2 (Container)
-
+#### Nivel 2: Contenedores
 ```mermaid
 C4Container
 title Contenedores principales de BienesRaices
@@ -93,8 +90,7 @@ Rel(Infrastructure, Db, "EF Core - Connection string desde DEFAULT_CONNECTION")
 Rel(BienesRaicesAPI, Cloudinary, "Cliente tipado (AddHttpClient) registrado con attribute RegisterExternalService")
 ```
 
-### Diagrama C4 - Nivel 3 (Component)
-
+#### Nivel 3: Componentes
 ```mermaid
 C4Component
 title Componentes dentro de Application / Infrastructure
@@ -113,8 +109,7 @@ Rel(PropertyHandlers, Repository, "Lee/Escribe Propiedad")
 Rel(Repository, DbContext, "Usa EF Core")
 ```
 
-### Diagrama C4 - Nivel 4 (Code / Ejemplo de flujo)
-
+#### Nivel 4: Flujo de Código
 ```mermaid
 C4Component
 title Flujo de creación de Propiedad (nivel de código)
@@ -131,70 +126,210 @@ Rel(MediatR, Repository, "Create / Save")
 Rel(Repository, Db, "EF Core -> SQL Server")
 ```
 
-> Nota: los nombres de componentes son representativos y se basan en las convenciones del proyecto (`Application/Features/Properties`, `Infrastructure/Repositories`).
-
 ### Diagrama MER (Entidad-Relación) — Notación Mermaid
 
 ```mermaid
 erDiagram
-    USUARIO {
-        int id PK
-        string nombre
-        string email
-        string hashed_password
-        datetime created_at
+    OWNER {
+        uniqueidentifier IdOwner PK
+        varchar Name
+        varchar Address
+        nvarchar Photo
+        date Birthday
+        datetime2 CreatedAt
+        varchar CreatedBy
+        datetime2 UpdatedAt
+        varchar UpdatedBy
+        bit IsActive
     }
 
-    ROL {
-        int id PK
-        string nombre
+    PROPERTY {
+        uniqueidentifier IdProperty PK
+        varchar Name
+        varchar Address
+        decimal Price
+        varchar CodeInternal
+        int Year
+        uniqueidentifier IdOwner FK
+        datetime2 CreatedAt
+        varchar CreatedBy
+        datetime2 UpdatedAt
+        varchar UpdatedBy
+        bit IsActive
     }
 
-    USUARIO_ROL {
-        int usuario_id FK
-        int rol_id FK
+    PROPERTYIMAGE {
+        uniqueidentifier IdPropertyImage PK
+        uniqueidentifier IdProperty FK
+        nvarchar File
+        bit Enabled
+        datetime2 CreatedAt
+        varchar CreatedBy
+        datetime2 UpdatedAt
+        varchar UpdatedBy
+        bit IsActive
     }
 
-    PROPIEDAD {
-        int id PK
-        string titulo
-        string descripcion
-        decimal precio
-        int propietario_id FK
-        datetime created_at
+    PROPERTYTRACE {
+        uniqueidentifier IdPropertyTrace PK
+        uniqueidentifier IdProperty FK
+        datetime2 DateSale
+        varchar Name
+        decimal Value
+        decimal Tax
+        datetime2 CreatedAt
+        varchar CreatedBy
+        datetime2 UpdatedAt
+        varchar UpdatedBy
+        bit IsActive
     }
 
-    IMAGEN {
-        int id PK
-        string public_id
-        string url
-        int propiedad_id FK
-    }
-
-    DIRECCION {
-        int id PK
-        string calle
-        string ciudad
-        string estado
-        string codigo_postal
-        int propiedad_id FK
-    }
-
-    USUARIO ||--o{ USUARIO_ROL : tiene
-    ROL ||--o{ USUARIO_ROL : asigna
-
-    USUARIO ||--o{ PROPIEDAD : "posee"
-    PROPIEDAD ||--o{ IMAGEN : "tiene"
-    PROPIEDAD ||--o{ DIRECCION : "tiene"
-
-    %% Ejemplo de relación many-to-many (si aplica) o tablas puente
+    OWNER ||--o{ PROPERTY : "owns"
+    PROPERTY ||--o{ PROPERTYIMAGE : "has"
+    PROPERTY ||--o{ PROPERTYTRACE : "has"
 ```
 
-Este MER es una propuesta basada en los artefactos y convenciones del proyecto (nombres en español para claridad). Adapta campos concretos a las entidades reales en `Domain/Entities`.
 
-## Buenas prácticas y notas finales
+---
 
-- Mantén la convención de atributos para registrar servicios. Revisa `Infrastructure/ServiceExtension.cs` antes de tocar wiring manual.
-- Añade validators (FluentValidation) para todas las requests y ubícalos en `Application/Features/.../Validators` para que el escaneo los registre.
-- Las respuestas deben usar `WrapperResponse<T>`; los controllers usan el filtro `ValidateModelAttribute` para errores de validación.
-- Tests: colocar pruebas por capa en los proyectos de tests (`*.Tests`) y revisa los binarios/output en `*/bin/Debug`.
+## Documentación Funcional
+
+### Flujo de Uso
+1. **Crear Propiedad**: El usuario envía un POST a `/properties` con los datos de la propiedad.
+2. **Validación**: El sistema valida los datos usando FluentValidation.
+3. **Persistencia**: La propiedad se guarda en la base de datos usando EF Core.
+4. **Respuesta**: El sistema devuelve un `WrapperResponse` con el resultado.
+
+---
+
+### Script SQL para la Base de Datos
+
+A continuación, se incluye el script SQL para la creación y configuración de la base de datos `LuxuryPropertiesDB`:
+
+```sql
+-- Script para la base de datos LuxuryPropertiesDB
+USE [LuxuryPropertiesDB]
+GO
+
+-- Tabla: Owner
+CREATE TABLE [dbo].[Owner](
+	[IdOwner] [uniqueidentifier] NOT NULL,
+	[Name] [varchar](150) NOT NULL,
+	[Address] [varchar](300) NULL,
+	[Photo] [nvarchar](max) NULL,
+	[Birthday] [date] NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [varchar](100) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[UpdatedBy] [varchar](100) NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED ([IdOwner] ASC)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+-- Tabla: Property
+CREATE TABLE [dbo].[Property](
+	[IdProperty] [uniqueidentifier] NOT NULL,
+	[Name] [varchar](200) NOT NULL,
+	[Address] [varchar](300) NOT NULL,
+	[Price] [decimal](18, 2) NOT NULL,
+	[CodeInternal] [varchar](50) NOT NULL,
+	[Year] [int] NULL,
+	[IdOwner] [uniqueidentifier] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [varchar](100) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[UpdatedBy] [varchar](100) NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED ([IdProperty] ASC)
+) ON [PRIMARY]
+GO
+
+-- Tabla: PropertyImage
+CREATE TABLE [dbo].[PropertyImage](
+	[IdPropertyImage] [uniqueidentifier] NOT NULL,
+	[IdProperty] [uniqueidentifier] NOT NULL,
+	[File] [nvarchar](max) NULL,
+	[Enabled] [bit] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [varchar](100) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[UpdatedBy] [varchar](100) NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED ([IdPropertyImage] ASC)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+-- Tabla: PropertyTrace
+CREATE TABLE [dbo].[PropertyTrace](
+	[IdPropertyTrace] [uniqueidentifier] NOT NULL,
+	[IdProperty] [uniqueidentifier] NOT NULL,
+	[DateSale] [datetime2](7) NOT NULL,
+	[Name] [varchar](200) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[Tax] [decimal](18, 2) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [varchar](100) NOT NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[UpdatedBy] [varchar](100) NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED ([IdPropertyTrace] ASC)
+) ON [PRIMARY]
+GO
+
+-- Relaciones entre tablas
+ALTER TABLE [dbo].[Property]  WITH CHECK ADD  CONSTRAINT [FK_Property_Owner] FOREIGN KEY([IdOwner])
+REFERENCES [dbo].[Owner] ([IdOwner])
+GO
+ALTER TABLE [dbo].[PropertyImage]  WITH CHECK ADD  CONSTRAINT [FK_PropertyImage_Property] FOREIGN KEY([IdProperty])
+REFERENCES [dbo].[Property] ([IdProperty])
+GO
+ALTER TABLE [dbo].[PropertyTrace]  WITH CHECK ADD  CONSTRAINT [FK_PropertyTrace_Property] FOREIGN KEY([IdProperty])
+REFERENCES [dbo].[Property] ([IdProperty])
+GO
+
+-- Índices y valores predeterminados
+ALTER TABLE [dbo].[Property] ADD UNIQUE NONCLUSTERED ([CodeInternal] ASC)
+GO
+ALTER TABLE [dbo].[Owner] ADD  DEFAULT (newid()) FOR [IdOwner]
+GO
+ALTER TABLE [dbo].[Owner] ADD  DEFAULT (sysutcdatetime()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Owner] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[Property] ADD  DEFAULT (newid()) FOR [IdProperty]
+GO
+ALTER TABLE [dbo].[Property] ADD  DEFAULT (sysutcdatetime()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Property] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[PropertyImage] ADD  DEFAULT (newid()) FOR [IdPropertyImage]
+GO
+ALTER TABLE [dbo].[PropertyImage] ADD  DEFAULT ((1)) FOR [Enabled]
+GO
+ALTER TABLE [dbo].[PropertyImage] ADD  DEFAULT (sysutcdatetime()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[PropertyImage] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[PropertyTrace] ADD  DEFAULT (newid()) FOR [IdPropertyTrace]
+GO
+ALTER TABLE [dbo].[PropertyTrace] ADD  DEFAULT (sysutcdatetime()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[PropertyTrace] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+
+-- Datos de ejemplo
+INSERT [dbo].[Owner] ([IdOwner], [Name], [Address], [Photo], [Birthday], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) 
+VALUES (N'abf521d1-83f2-4a73-0c8e-08de053b621e', N'Richard Dawn', N'cra 2a', N'https://res.cloudinary.com/dbuoi70ms/image/upload/v1759798173/productos/xkastutr3btgmxzzbh9z.jpg', CAST(N'1985-07-05' AS Date), CAST(N'2025-10-06T19:49:34.2685868' AS DateTime2), N'System', CAST(N'2025-10-07T00:49:34.2721276' AS DateTime2), N'System', 1)
+GO
+INSERT [dbo].[Owner] ([IdOwner], [Name], [Address], [Photo], [Birthday], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) 
+VALUES (N'52afe350-440d-4262-9b2e-9196b134a07e', N'Juan Pérez', N'Calle 123 #45-67, Bogotá', NULL, CAST(N'1985-06-15' AS Date), CAST(N'2025-09-30T19:49:45.7900524' AS DateTime2), N'AdminUser', NULL, NULL, 1)
+GO
+-- Más datos de ejemplo pueden ser añadidos aquí.
+```
+
+> Nota: Este script está diseñado para ser ejecutado en SQL Server Management Studio (SSMS) o herramientas similares. Asegúrate de configurar correctamente la base de datos antes de ejecutarlo.
+
+---
+
+Para más detalles, consulta los archivos fuente y las pruebas en `*.Tests`.

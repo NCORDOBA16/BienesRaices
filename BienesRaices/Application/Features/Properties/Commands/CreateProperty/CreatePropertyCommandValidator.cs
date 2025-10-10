@@ -1,5 +1,4 @@
 using FluentValidation;
-using Application.Features.Properties.Commands.CreateProperty;
 
 namespace Application.Features.Properties.Commands.CreateProperty
 {

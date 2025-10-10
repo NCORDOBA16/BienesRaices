@@ -5,20 +5,13 @@ using Domain.Entities;
 using MediatR;
 using Application.Contracts.Persistence.Common.UnitOfWork;
 using Application.Exceptions;
-using System.Data;
 
 namespace Application.Features.Properties.Commands.UpdatePropertyPrice
 {
-    public class UpdatePropertyPriceCommandHandler : IRequestHandler<UpdatePropertyPriceCommand, BaseWrapperResponse<PropertyDto>>
+    public class UpdatePropertyPriceCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<UpdatePropertyPriceCommand, BaseWrapperResponse<PropertyDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        public UpdatePropertyPriceCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<BaseWrapperResponse<PropertyDto>> Handle(UpdatePropertyPriceCommand request, CancellationToken cancellationToken)
         {
@@ -31,14 +24,15 @@ namespace Application.Features.Properties.Commands.UpdatePropertyPrice
             {
                 IdPropertyTrace = Guid.NewGuid(),
                 IdProperty = property.IdProperty,
-                DateSale = DateTime.UtcNow,
-                Name = "Price Update",
+                DateSale = request.DateSale.Date,
+                Name = request.Name,
                 Value = property.Price,
-                Tax = 0m
+                Tax = request.Tax
             };
 
             property.Price = request.NewPrice;
             property.UpdatedAt = DateTime.UtcNow;
+            property.IsActive = false;
 
             await propRepo.UpdateAsync(property, cancellationToken);
 

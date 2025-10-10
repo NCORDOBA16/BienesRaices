@@ -4,19 +4,17 @@ using Application.Features.Properties.Commands.UpdateProperty;
 using Application.Features.Properties.Commands.UpdatePropertyPrice;
 using Application.Features.Properties.Commands.UploadPropertyImage;
 using Application.Features.Properties.Queries.ListProperties;
-using Application.Wrappers.Common;
 using BienesRaicesAPI.Controllers.Common;
-using BienesRaicesAPI.Filters;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace BienesRaicesAPI.Controllers.v1
 {
+    [Authorize(Roles = "Admin,User")]
     public class PropertiesController(IMediator mediator) : V1Controller(mediator)
     {
         [HttpPost]
-        [ValidateModel]
         public async Task<IActionResult> Create([FromBody] CreatePropertyDto dto)
         {
             var command = new CreatePropertyCommand { Property = dto };
@@ -24,17 +22,15 @@ namespace BienesRaicesAPI.Controllers.v1
             return Ok(result);
         }
 
-        [HttpPatch("{id}/price")]
-        [ValidateModel]
-        public async Task<IActionResult> UpdatePrice([FromRoute] Guid id, [FromBody] decimal newPrice)
+        [HttpPatch("UpdatePrice")]
+        public async Task<IActionResult> UpdatePrice([FromBody] UpdatePropertyPriceCommand command)
         {
-            var command = new UpdatePropertyPriceCommand { IdProperty = id, NewPrice = newPrice };
+            //var command = new UpdatePropertyPriceCommand { IdProperty = id, NewPrice = newPrice };
             var result = await Mediator.Send(command);
             return Ok(result);
         }
 
         [HttpPatch("{id}")]
-        [ValidateModel]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdatePropertyCommand command)
         {
             // Bind route id into the command and forward
@@ -43,7 +39,8 @@ namespace BienesRaicesAPI.Controllers.v1
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("ListPropertyFilters")]
+        [AllowAnonymous]
         public async Task<IActionResult> Get([FromQuery] GetPropertiesQuery query, CancellationToken cancellationToken)
         {
             var result = await Mediator.Send(query, cancellationToken);

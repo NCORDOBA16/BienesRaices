@@ -16,6 +16,8 @@ namespace BienesRaicesAPI
 
             services.AddCustomCors();
 
+            services.AddAppAuthentication();
+
             return services;
         }
     }

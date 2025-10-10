@@ -1,7 +1,5 @@
 using Application.Wrappers.Common;
-using Ardalis.Specification;
 using Application.DTOs.Properties;
-using Application.Mappings.Profiles;
 using Application.Specifications.Properties;
 using AutoMapper;
 using Domain.Entities;
@@ -11,16 +9,10 @@ using Application.Exceptions;
 
 namespace Application.Features.Properties.Commands.CreateProperty
 {
-    public class CreatePropertyCommandHandler : IRequestHandler<CreatePropertyCommand, BaseWrapperResponse<PropertyDto>>
+    public class CreatePropertyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<CreatePropertyCommand, BaseWrapperResponse<PropertyDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        public CreatePropertyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<BaseWrapperResponse<PropertyDto>> Handle(CreatePropertyCommand request, CancellationToken cancellationToken)
         {
@@ -42,7 +34,7 @@ namespace Application.Features.Properties.Commands.CreateProperty
             await _unitOfWork.Complete();
 
             var dto = _mapper.Map<PropertyDto>(entity);
-            return new Wrappers.WrapperResponse<PropertyDto>(dto);
+            return new Wrappers.WrapperResponse<PropertyDto>(dto,"Se creó cottectamenmte");
         }
     }
 }

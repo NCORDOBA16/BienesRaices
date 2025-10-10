@@ -23,48 +23,31 @@ namespace Application.Specifications.Properties
                 .Include(p => p.PropertyImages)
                 .Include(p => p.PropertyTraces);
 
-            if (idOwner.HasValue)
-                Query.Where(p => p.IdOwner == idOwner.Value);
+            Query.Where(p => (!idOwner.HasValue || p.IdOwner == idOwner)
+            && (string.IsNullOrWhiteSpace(ownerName) || p.Owner == null || p.Owner.Name == ownerName)
+            && (!priceFrom.HasValue || p.Price >= priceFrom)
+            && (!priceTo.HasValue || p.Price <= priceTo)
+            && (!year.HasValue || p.Year == year)
+            && (string.IsNullOrWhiteSpace(search) || p.Address.Contains(search))
+            );
 
-            if (!string.IsNullOrWhiteSpace(ownerName))
-                Query.Where(p => p.Owner != null && p.Owner.Name.Contains(ownerName));
-
-            if (priceFrom.HasValue)
-                Query.Where(p => p.Price >= priceFrom.Value);
-
-            if (priceTo.HasValue)
-                Query.Where(p => p.Price <= priceTo.Value);
-
-            if (year.HasValue)
-                Query.Where(p => p.Year == year.Value);
-
-            if (!string.IsNullOrWhiteSpace(search))
-                Query.Where(p => p.Address.Contains(search) || p.Name.Contains(search));
-
-            if (hasActiveImages.HasValue)
-            {
-                if (hasActiveImages.Value)
-                    Query.Where(p => p.PropertyImages.Any(pi => pi.IsActive && pi.Enabled));
-                else
-                    Query.Where(p => !p.PropertyImages.Any(pi => pi.IsActive && pi.Enabled));
-            }
 
             // Last sale filters: evaluate last PropertyTrace (by DateSale)
             if (lastSaleMinValue.HasValue || lastSaleTax.HasValue || lastSaleFrom.HasValue || lastSaleTo.HasValue)
             {
-                Query.Where(p => p.PropertyTraces.Any());
+                Query.Where(p => p.PropertyTraces != null && p.PropertyTraces.Count > 0);
 
                 if (lastSaleMinValue.HasValue)
-                    Query.Where(p => p.PropertyTraces.OrderByDescending(t => t.DateSale).First().Value >= lastSaleMinValue.Value);
+                    Query.Where(p => p.PropertyTraces == null || p.PropertyTraces.Count == 0 || p.PropertyTraces.OrderByDescending(t => t.DateSale).First().Value >= lastSaleMinValue.Value);
 
                 if (lastSaleTax.HasValue)
-                    Query.Where(p => p.PropertyTraces.OrderByDescending(t => t.DateSale).First().Tax == lastSaleTax.Value);
+                    Query.Where(p => p.PropertyTraces == null || p.PropertyTraces.Count == 0 || p.PropertyTraces.OrderByDescending(t => t.DateSale).First().Tax == lastSaleTax.Value);
 
                 if (lastSaleFrom.HasValue)
-                    Query.Where(p => p.PropertyTraces.OrderByDescending(t => t.DateSale).First().DateSale >= lastSaleFrom.Value);
+                    Query.Where(p => p.PropertyTraces == null || p.PropertyTraces.Count == 0 || p.PropertyTraces.OrderByDescending(t => t.DateSale).First().DateSale >= lastSaleFrom.Value);
 
                 if (lastSaleTo.HasValue)
-                    Query.Where(p => p.PropertyTraces.OrderByDescending(t => t.DateSale).First().DateSale <= lastSaleTo.Value);
+                    Query.Where(p => p.PropertyTraces == null || p.PropertyTraces.Count == 0 || p.PropertyTraces.OrderByDescending(t => t.DateSale).First().DateSale <= lastSaleTo.Value);
             }
         }
     }

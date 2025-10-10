@@ -7,16 +7,10 @@ using MediatR;
 
 namespace Application.Features.Properties.Queries.ListProperties
 {
-    public class GetPropertiesQueryHandler : IRequestHandler<GetPropertiesQuery, BaseWrapperResponse<IList<PropertyDto>>>
+    public class GetPropertiesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<GetPropertiesQuery, BaseWrapperResponse<IList<PropertyDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        public GetPropertiesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<BaseWrapperResponse<IList<PropertyDto>>> Handle(GetPropertiesQuery request, CancellationToken cancellationToken)
         {
@@ -36,6 +30,7 @@ namespace Application.Features.Properties.Queries.ListProperties
             var repo = _unitOfWork.Repository<Domain.Entities.Property>();
             var list = await repo.ListAsync(spec, cancellationToken);
 
+            
             var dtos = _mapper.Map<IList<PropertyDto>>(list);
             return new Application.Wrappers.WrapperResponse<IList<PropertyDto>>(dtos);
         }

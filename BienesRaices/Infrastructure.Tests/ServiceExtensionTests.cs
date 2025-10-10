@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using System.Reflection;
+﻿using System.Reflection;
 using Application.Attributes.Services;
 using Application.Contracts.Persistence.Common.BaseRepository;
 using Application.Contracts.Services.ExternalApiServices;
@@ -9,7 +8,6 @@ using Infrastructure.DbContexts;
 using Infrastructure.Repositories.Common.BaseRepository;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
-using NUnit.Framework;
 
 namespace Infrastructure.Tests
 {

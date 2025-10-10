@@ -1,6 +1,5 @@
 ﻿using Application.Extensions.Environtments;
 using Application.Statics.Configurations;
-using Application.Statics.Externals;
 using Application.Statics.FileServer;
 
 namespace BienesRaicesAPI.Extensions

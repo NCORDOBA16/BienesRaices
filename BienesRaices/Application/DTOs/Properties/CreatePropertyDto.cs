@@ -1,5 +1,3 @@
-using System;
-
 namespace Application.DTOs.Properties
 {
     public class CreatePropertyDto
@@ -9,7 +7,9 @@ namespace Application.DTOs.Properties
         public decimal Price { get; set; }
         public string CodeInternal { get; set; } = null!;
         public Guid IdOwner { get; set; }
+        public string Year { get; set; }
         // Optionally client can send image urls
-        public IList<string>? ImageUrls { get; set; }
+        //public IList<string>? ImageUrls { get; set; }
+
     }
 }

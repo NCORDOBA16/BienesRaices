@@ -1,5 +1,3 @@
-using System;
-
 namespace Application.DTOs.Properties
 {
     public class PropertyDto
@@ -16,5 +14,6 @@ namespace Application.DTOs.Properties
         public int TotalImages { get; set; }
         public DateTime? LastSaleDate { get; set; }
         public decimal? LastSaleValue { get; set; }
+        public bool IsActive { get; set; }
     }
 }

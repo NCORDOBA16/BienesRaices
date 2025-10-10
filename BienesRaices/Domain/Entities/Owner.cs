@@ -1,5 +1,4 @@
 using Domain.Entities.Common;
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities
@@ -10,7 +9,7 @@ namespace Domain.Entities
         public Guid IdOwner { get; set; }
         public string Name { get; set; } = null!;
         public string? Address { get; set; }
-        public byte[]? Photo { get; set; }
+        public string? Photo { get; set; }
         public DateTime? Birthday { get; set; }
 
         // Navigation

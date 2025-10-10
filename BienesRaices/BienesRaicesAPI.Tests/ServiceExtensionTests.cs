@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using BienesRaicesAPI;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace BienesRaicesAPI.Tests

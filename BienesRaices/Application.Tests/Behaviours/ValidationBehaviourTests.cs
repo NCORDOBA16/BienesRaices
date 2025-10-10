@@ -1,52 +1,49 @@
 ﻿using Application.Behaviours;
-using Application.Tests.Fixtures.Behaviours;
 using FluentValidation;
-using FluentValidation.Results;
 using Moq;
+using NUnit.Framework;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace Application.Tests.Behaviours
 {
-    [TestFixture]
+    public class ValidationDummyRequest : IRequest<string> { }
+
     public class ValidationBehaviourTests
     {
+
         [Test]
-        public void Handle_ThrowsExceptionWhenValidationFails()
+        public async Task Handle_NoValidators_CallsNext()
         {
-            // Arrange
-            var mockValidator = new Mock<IValidator<MyValidationBehaviourRequest>>();
-            var validationFailure = new ValidationFailure("Property", "Error");
-            mockValidator.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<MyValidationBehaviourRequest>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult(new List<ValidationFailure> { validationFailure }));
-            var behaviour = new ValidationBehaviour<MyValidationBehaviourRequest, MyValidationBehaviourResponse>([mockValidator.Object]);
-            var request = new MyValidationBehaviourRequest();
+            var behaviour = new ValidationBehaviour<ValidationDummyRequest, string>(Enumerable.Empty<IValidator<ValidationDummyRequest>>());
 
-            static Task<MyValidationBehaviourResponse> next() => Task.FromResult(new MyValidationBehaviourResponse());
+            var called = false;
+            Task<string> Next() { called = true; return Task.FromResult("ok"); }
 
-            // Act & Assert
-            Assert.ThrowsAsync<ValidationException>(() => behaviour.Handle(request, next, new CancellationToken()));
+            var result = await behaviour.Handle(new ValidationDummyRequest(), Next, default);
+
+            Assert.That(called, Is.True);
+            Assert.That(result, Is.EqualTo("ok"));
         }
 
         [Test]
-        public async Task Handle_CallsNextWhenValidationSucceeds()
+        public void Handle_WithFailures_ThrowsValidationException()
         {
-            // Arrange
-            var mockValidator = new Mock<IValidator<MyValidationBehaviourRequest>>();
-            mockValidator.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<MyValidationBehaviourRequest>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
-            var behaviour = new ValidationBehaviour<MyValidationBehaviourRequest, MyValidationBehaviourResponse>([mockValidator.Object]);
-            var request = new MyValidationBehaviourRequest();
-            var wasNextCalled = false;
-            Task<MyValidationBehaviourResponse> next()
-            {
-                wasNextCalled = true;
-                return Task.FromResult(new MyValidationBehaviourResponse());
-            }
+            var validatorMock = new Mock<IValidator<ValidationDummyRequest>>();
+            var failure = new FluentValidation.Results.ValidationFailure("Prop", "err");
+            validatorMock.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ValidationDummyRequest>>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(new FluentValidation.Results.ValidationResult(new[] { failure }));
 
-            // Act
-            await behaviour.Handle(request, next, new CancellationToken());
+            var behaviour = new ValidationBehaviour<ValidationDummyRequest, string>(new[] { validatorMock.Object });
 
-            // Assert
-            Assert.That(wasNextCalled, Is.True);
+            Task<string> Next() => Task.FromResult("ok");
+
+            Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await behaviour.Handle(new ValidationDummyRequest(), Next, default));
         }
     }
 }
+ 
